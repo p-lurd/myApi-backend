@@ -14,3 +14,10 @@ export class UserDto {
     avatar: string;
     password?: string;
 }
+
+export class UserResponseDto{
+    _id: string;
+    name: string;
+    email: string;
+    avatar: string;
+}

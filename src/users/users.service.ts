@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserDocument, UserModelName } from './schemas/user.schema';
 import { userAlreadyExists, userNotCreated } from 'src/utilities/exceptions/httpExceptions';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -17,7 +18,9 @@ export class UsersService {
         return user;
         // throw new userAlreadyExists('100CU')
       }
-      const newUser = await this.userModel.create({name, email, password, avartar, githubId})
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      const newUser = await this.userModel.create({name, email, password:hashedPassword, avartar, githubId})
       return newUser;
     } catch (error) {
       console.log({error})
@@ -41,8 +44,8 @@ export class UsersService {
   //   return `This action removes a #${id} user`;
   // }
 
-  async getUserById(userId){
-    const user: UserDto = await this.userModel.findOne({_id: userId})
+  async getUserDetails(identifier){
+    const user: UserDto = await this.userModel.findOne(identifier)
     return user
   }
 }
