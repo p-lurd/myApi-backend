@@ -5,7 +5,7 @@ export const BusinessSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     githubId: { type: String, unique: true},
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, {
     timestamps: true,
 });
@@ -16,7 +16,7 @@ export interface Business {
     email: string;
     githubId?: String;
     createdAt: Date;
-    owner: mongoose.Types.ObjectId;
+    creatorId: mongoose.Types.ObjectId;
 }
 
 // model name

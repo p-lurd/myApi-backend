@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { BusinessesService } from './businesses.service';
-import { CreateBusinessDto } from './dto/create-business.dto';
+import { CreateBusinessDto, CreateUserBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
 
 @Controller('businesses')
@@ -9,26 +9,35 @@ export class BusinessesController {
 
   @Post()
   create(@Body() createBusinessDto: CreateBusinessDto) {
-    return this.businessesService.create(createBusinessDto);
+    const{ name, email, githubId, ownerId} = createBusinessDto
+    return this.businessesService.createBusiness(name, email, githubId, ownerId);
   }
 
-  @Get()
-  findAll() {
-    return this.businessesService.findAll();
-  }
-
+  //  to find all the business an admin has access to
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.businessesService.findOne(+id);
+  findAll(@Param('id') id: string) {
+    return this.businessesService.findAll(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBusinessDto: UpdateBusinessDto) {
-    return this.businessesService.update(+id, updateBusinessDto);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.businessesService.findOne(+id);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.businessesService.remove(+id);
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateBusinessDto: UpdateBusinessDto) {
+  //   return this.businessesService.update(+id, updateBusinessDto);
+  // }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.businessesService.remove(+id);
+  // }
+
+  // to preapprove user admin
+  @Post('worker')
+  createUserBusiness(@Body() createUserBusinessDto: CreateUserBusinessDto) {
+    const{ name, businessId, userId, email, role} = createUserBusinessDto
+    return this.businessesService.createUserBusiness(name, businessId, userId, email, role);
   }
 }

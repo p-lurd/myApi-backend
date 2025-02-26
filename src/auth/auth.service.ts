@@ -14,6 +14,9 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { tokenify } from './jwt.token';
 import * as bcrypt from 'bcryptjs';
+import { BusinessesService } from 'src/businesses/businesses.service';
+import { Model } from 'mongoose';
+import { BusinessUserDocument } from 'src/businesses/schemas/user-business.schema';
 
 
 @Injectable()
@@ -22,6 +25,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private businessUserModel: Model<BusinessUserDocument>,
   ) {}
   async validateUser(profile: Profile, res: Response) {
     try {
@@ -70,6 +74,8 @@ export class AuthService {
 
   async register(registerUserDto: RegisterUserDto, res: Response) {
     try {
+      const permittedAdmin = this.businessUserModel.findOne({email: registerUserDto.email})
+      if(!permittedAdmin){throw new UnauthorizedException('user not authorized yet')}
       const user = await this.usersService.create(registerUserDto);
       const token = await tokenify(
         this.jwtService,
