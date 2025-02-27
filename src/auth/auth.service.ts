@@ -16,7 +16,8 @@ import { tokenify } from './jwt.token';
 import * as bcrypt from 'bcryptjs';
 import { BusinessesService } from 'src/businesses/businesses.service';
 import { Model } from 'mongoose';
-import { BusinessUserDocument } from 'src/businesses/schemas/user-business.schema';
+import { BusinessUserDocument, BusinessUserModelName } from 'src/businesses/schemas/user-business.schema';
+import { InjectModel } from '@nestjs/mongoose';
 
 
 @Injectable()
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    @InjectModel(BusinessUserModelName)
     private businessUserModel: Model<BusinessUserDocument>,
   ) {}
   async validateUser(profile: Profile, res: Response) {

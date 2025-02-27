@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { BusinessDocument, BusinessModelName } from './schemas/business.schema';
 import { Model } from 'mongoose';
 import { UsersService } from 'src/users/users.service';
-import { BusinessUserDocument } from './schemas/user-business.schema';
+import { BusinessUserDocument, BusinessUserModelName } from './schemas/user-business.schema';
 import { ROLES } from 'src/utilities/userRoles.enum';
 import { userBusinessNotCreated, userBusinessNotUpdated } from 'src/utilities/exceptions/httpExceptions';
 
@@ -15,6 +15,7 @@ export class BusinessesService {
     @InjectModel(BusinessModelName)
     private businessModel: Model<BusinessDocument>,
     private readonly usersService: UsersService,
+    @InjectModel(BusinessUserModelName)
     private businessUserModel: Model<BusinessUserDocument>
   ) {}
   async createBusiness(
