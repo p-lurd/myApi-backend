@@ -7,12 +7,14 @@ import { AuthModule } from './auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BusinessesModule } from './businesses/businesses.module';
 
+const MONGODB_URI = process.env.MONGODB_URI
+
 @Module({
   imports: [
     UsersModule, 
     ConfigModule, 
     AuthModule,
-    MongooseModule.forRoot('mongodb://localhost:27017/myApi'),
+    MongooseModule.forRoot(MONGODB_URI),
     BusinessesModule
   ],
   controllers: [AppController],

@@ -26,6 +26,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private readonly businessesService: BusinessesService,
     @InjectModel(BusinessUserModelName)
     private businessUserModel: Model<BusinessUserDocument>,
   ) {}
@@ -54,6 +55,9 @@ export class AuthService {
         createdAt: userDoc.createdAt,
       };
 
+      // update the user business relationship to add userId
+      const userBusiness = await this.businessesService.updateUserBusiness(dbUser.email, {userId:dbUser._id})
+
       const token = await tokenify(this.jwtService, dbUser._id, dbUser.email);
       res.cookie('authToken', token, {
         httpOnly: true,
@@ -76,8 +80,12 @@ export class AuthService {
 
   async register(registerUserDto: RegisterUserDto, res: Response) {
     try {
-      const permittedAdmin = this.businessUserModel.findOne({email: registerUserDto.email})
-      if(!permittedAdmin){throw new UnauthorizedException('user not authorized yet')}
+      // const {name, email, password} = registerUserDto;
+      // const userData: any = { name, email, password};
+      const permittedAdmin = await this.businessUserModel.findOne({userEmail: registerUserDto.email})
+      if(!permittedAdmin){
+        throw new UnauthorizedException('User not authorized by organization yet');
+      }
       const user = await this.usersService.create(registerUserDto);
       const token = await tokenify(
         this.jwtService,
@@ -91,12 +99,15 @@ export class AuthService {
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
       });
-      res.status(201).json(user);
+      return res.status(201).json(user);
     } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException(
-        'message: failed to register user',
-      );
+      console.error('Registration Error:', error); // Improved debugging
+
+    if (error instanceof UnauthorizedException) {
+      return res.status(401).json({ message: error.message });
+    }
+
+    throw new InternalServerErrorException(error.message);
     }
   }
 

@@ -16,7 +16,7 @@ export class BusinessesController {
   //  to find all the business an admin has access to
   @Get(':id')
   findAll(@Param('id') id: string) {
-    return this.businessesService.findAll(+id);
+    return this.businessesService.findAll(id);
   }
 
   // @Get(':id')
@@ -37,7 +37,8 @@ export class BusinessesController {
   // to preapprove user admin
   @Post('worker')
   createUserBusiness(@Body() createUserBusinessDto: CreateUserBusinessDto) {
-    const{ name, businessId, userId, email, role} = createUserBusinessDto
-    return this.businessesService.createUserBusiness(name, businessId, userId, email, role);
+    const{ name, businessId, userId, email, role} = createUserBusinessDto;
+    console.log({createUserBusinessDto})
+    return this.businessesService.createUserBusiness(name, businessId, email, role, userId);
   }
 }

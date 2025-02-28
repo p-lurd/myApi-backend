@@ -4,7 +4,7 @@ import * as mongoose from 'mongoose';
 export const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
-    githubId: { type: String, unique: true},
+    githubId: { type: String, unique: false},
     avatar: { type: String, required: false },
     password: { type: String, required: false}
 }, {
