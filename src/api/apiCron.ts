@@ -6,8 +6,10 @@ import { ApiMonitorService } from './api-monitor.service';
 export class CronService {
   constructor(private readonly apiMonitorService: ApiMonitorService) {}
 
-  @Cron('*/5 * * * *') // Runs every 5 minutes
+  @Cron('*/6 * * * * *') // Runs every 6 seconds
+  // @Cron('*/5 * * * *') // Runs every 5 minutes
   async handleCron() {
+    console.log("cron started")
     await this.apiMonitorService.fetchAndQueueApis();
   }
 }

@@ -1,14 +1,16 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RedisService } from '@liaoliaots/nestjs-redis';
 import { ApiDocument } from './schemas/api.schema';
 import { ApiResponseDocument, ApiResponseModelName } from './schemas/apiResponse.schema';
+import { CreateApiDto, CreateApiResponseDto } from './dto/create-api.dto';
+import Redis from 'ioredis';
 
 @Injectable()
 export class ApiMonitorService implements OnModuleInit {
   private readonly logger = new Logger(ApiMonitorService.name);
-  private redisClient;
+  private redisClient: Redis;
 
   constructor(
     @InjectModel('Api') private readonly apiModel: Model<ApiDocument>,
@@ -44,15 +46,65 @@ export class ApiMonitorService implements OnModuleInit {
     });
 
     this.redisClient.on('message', async (channel, message) => {
-      if (channel === 'api_results') {
-        const result = JSON.parse(message);
-        console.log({result})
-        // await this.apiModel.findByIdAndUpdate(result.id, { status: result.status });
-        await this.apiResponseModel.create(result)
-        this.logger.log(`Stored API result: ${result.id} - ${result.status}`);
-      }
+        try {
+            if (channel === 'api_results') {
+                const result = JSON.parse(message);
+                console.log({result})
+                // await this.apiModel.findByIdAndUpdate(result.id, { status: result.status });
+                await this.apiResponseModel.create(result)
+                this.logger.log(`Stored API result: ${result.id} - ${result.status}`);
+              }
+        } catch (error) {
+            if(error instanceof HttpException){
+                // return res.status(500).json({message: error.message})
+                return error
+            }
+            throw new InternalServerErrorException(error.message);
+        }
+      
     });
   }
 
 //   route to create apis
+async createApi (createApiDto: CreateApiDto){
+    try {
+        const api: CreateApiDto = {
+            url: createApiDto.url,
+            businessId: createApiDto.businessId,
+        }
+        if(createApiDto.options){ api.options=createApiDto.options}
+       
+        return await this.apiModel.create(api)
+    } catch (error) {
+        if(error instanceof HttpException){
+            // return res.status(500).json({message: error.message})
+            throw error
+        }
+        throw new InternalServerErrorException(error.message);
+    }
+}
+
+async createApiResponse(createApiResponseDto: CreateApiResponseDto){
+    try {
+        return await this.apiResponseModel.create(createApiResponseDto)
+    } catch (error) {
+        if(error instanceof HttpException){
+            // return res.status(500).json({message: error.message})
+            throw error
+        }
+        throw new InternalServerErrorException(error.message);
+    }
+}
+
+async findApiResponses(id: string){
+    try {
+        return await this.apiResponseModel.find({businessId: id})
+    } catch (error) {
+        if(error instanceof HttpException){
+            // return res.status(500).json({message: error.message})
+            throw error
+        }
+        throw new InternalServerErrorException(error.message);
+    }
+}
 }

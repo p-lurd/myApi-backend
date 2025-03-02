@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 // Define the schema
 export const ApiSchema = new mongoose.Schema({
     url: { type: String, unique: true, required: true },
-    businessId: { type: String, unique: false},
+    businessId: { type: String, unique: false, required: true},
     options:{type:Object, required: false},
 }, {
     timestamps: true,
