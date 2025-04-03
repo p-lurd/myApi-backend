@@ -4,18 +4,21 @@ import (
 	"context"
 	"fmt"
 	"log"
+	// "time"
 
 	"exmaple.com/go-routine/models"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+
+	// "go.mongodb.org/mongo-driver/bson/primitive"
+	// oldBson "gopkg.in/mgo.v2/bson"
 )
 
 // FetchJobs retrieves API jobs from MongoDB
 func FetchJobs(client *mongo.Client) []models.ApiJob {
-	apiCollection := client.Database("your_database_name").Collection("api_jobs")
-
-	// Fetch jobs
+	apiCollection := client.Database("myApi").Collection("apis")
+	
 	cursor, err := apiCollection.Find(context.Background(), bson.M{})
 	if err != nil {
 		log.Fatalf("❌ Error fetching API Jobs: %v", err)
@@ -24,14 +27,29 @@ func FetchJobs(client *mongo.Client) []models.ApiJob {
 
 	var jobs []models.ApiJob
 	for cursor.Next(context.Background()) {
+
+		// var raw bson.M
+		// if err := cursor.Decode(&raw); err != nil {
+		// 	log.Println("❌ Error decoding raw data:", err)
+		// 	continue
+		// }
+		// log.Printf("Raw Data: %+v", raw)
+
 		var job models.ApiJob
 		if err := cursor.Decode(&job); err != nil {
 			log.Println("❌ Error decoding API Job:", err)
 			continue
 		}
+		// log.Printf("Job here: %+v", job)
+
+		// Log raw data for debugging
+		log.Printf("Decoded Job: %+v", job)
+
 		jobs = append(jobs, job)
 	}
 
+	fmt.Println("jobs:", jobs)
 	fmt.Printf("✅ Found %d API jobs\n", len(jobs))
 	return jobs
 }
+

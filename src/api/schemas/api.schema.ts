@@ -2,8 +2,9 @@ import * as mongoose from 'mongoose';
  
 // Define the schema
 export const ApiSchema = new mongoose.Schema({
+    // _id: { type: ObjectId, unique: true, default:new ObjectId()},
     url: { type: String, unique: true, required: true },
-    businessId: { type: String, unique: false, required: true},
+    businessId: { type: mongoose.Schema.Types.ObjectId, ref:'Business', unique: false, required: true},
     options:{type:Object, required: false},
 }, {
     timestamps: true,
@@ -12,7 +13,7 @@ export const ApiSchema = new mongoose.Schema({
 // TypeScript interface for the document
 export interface Api {
     url: string;
-    businessId: String;
+    businessId: string;
     options?: Object;
     createdAt: Date;
 }
