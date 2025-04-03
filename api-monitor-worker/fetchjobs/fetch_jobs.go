@@ -28,19 +28,11 @@ func FetchJobs(client *mongo.Client) []models.ApiJob {
 	var jobs []models.ApiJob
 	for cursor.Next(context.Background()) {
 
-		// var raw bson.M
-		// if err := cursor.Decode(&raw); err != nil {
-		// 	log.Println("❌ Error decoding raw data:", err)
-		// 	continue
-		// }
-		// log.Printf("Raw Data: %+v", raw)
-
 		var job models.ApiJob
 		if err := cursor.Decode(&job); err != nil {
 			log.Println("❌ Error decoding API Job:", err)
 			continue
 		}
-		// log.Printf("Job here: %+v", job)
 
 		// Log raw data for debugging
 		log.Printf("Decoded Job: %+v", job)
