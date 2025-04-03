@@ -34,16 +34,6 @@ func ConnectDB() *mongo.Client {
 		log.Fatal("MongoDB Connection Error:", err)
 	}
 
-	// defer func() {
-	// 	if err = client.Disconnect(ctx); err != nil {
-	// 		log.Fatal("Error Disconnecting MongoDB:", err)
-	// 		// panic(err)
-	// 	}
-	// }()
-
-	
-
-	// _ = client.Ping(ctx, readpref.Primary())
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		log.Fatal("MongoDB Ping Failed:", err)
 	}

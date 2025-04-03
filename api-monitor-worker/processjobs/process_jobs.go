@@ -7,9 +7,11 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"os"
+	"strings"
 
 	"exmaple.com/go-routine/models"
-
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -17,8 +19,18 @@ import (
 func ProcessAndStoreAPIResponse(job models.ApiJob, client *mongo.Client) {
 	startTime := time.Now()
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("❌ Error loading .env file")
+	}
+	dbName := os.Getenv("DB_NAME");
+
 	clientHTTP := http.Client{Timeout: 5 * time.Second}
-	resp, err := clientHTTP.Get(job.URL)
+	var url = job.URL
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		url = "https://" + url
+	}
+	resp, err := clientHTTP.Get(url)
 
 	elapsedTime := time.Since(startTime).Milliseconds()
 	apiResponse := models.ApiResponse{
@@ -29,6 +41,7 @@ func ProcessAndStoreAPIResponse(job models.ApiJob, client *mongo.Client) {
 	}
 
 	if err != nil {
+		fmt.Println("the error from getting page:", err)
 		apiResponse.StatusCode = 0
 		apiResponse.Success = false
 	} else {
@@ -38,10 +51,10 @@ func ProcessAndStoreAPIResponse(job models.ApiJob, client *mongo.Client) {
 	}
 
 	// Store response in MongoDB
-	apiResponseCollection := client.Database("your_database_name").Collection("api_responses")
+	apiResponseCollection := client.Database(dbName).Collection("api_responses")
 	_, err = apiResponseCollection.InsertOne(context.Background(), apiResponse)
 	if err != nil {
-		log.Println("❌ Error saving API response:", err)
+		log.Fatal("❌ Error saving API response:", err)
 	} else {
 		fmt.Printf("✅ Saved API response for %s (Status: %d)\n", job.URL, apiResponse.StatusCode)
 	}
