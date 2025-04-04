@@ -51,7 +51,7 @@ func ProcessAndStoreAPIResponse(job models.ApiJob, client *mongo.Client) {
 	}
 
 	// Store response in MongoDB
-	apiResponseCollection := client.Database(dbName).Collection("api_responses")
+	apiResponseCollection := client.Database(dbName).Collection("apiresponses")
 	_, err = apiResponseCollection.InsertOne(context.Background(), apiResponse)
 	if err != nil {
 		log.Fatal("❌ Error saving API response:", err)

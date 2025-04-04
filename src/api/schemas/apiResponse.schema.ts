@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
  
 // Define the schema
 export const ApiResponseSchema = new mongoose.Schema({
-    url: { type: String, unique: true, required: true },
+    url: { type: String, unique: false, required: true },
     apiId: { type: mongoose.Schema.Types.ObjectId, ref: 'Api', unique: false, required: true },
     statusCode:{ type: Number, required: true},
     responseTime: { type: Number, required: true},
