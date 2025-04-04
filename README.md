@@ -25,7 +25,7 @@
 ## Description
 
 An api monitoring tool.
-Frontend is currently in works.
+Frontend is currently in works. check it out @ https://github.com/p-lurd/myApi-frontend
 
 ## Project setup
 
