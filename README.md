@@ -34,6 +34,8 @@ $ npm install
 ```
 ## For Go microservice
 ```bash
+# go install the go folder first
+$ cd api-monitor-worker
 # install dependencies
 $ go mod tidy
 # To biuld
