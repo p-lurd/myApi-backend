@@ -1,6 +1,6 @@
 import { HttpException, Injectable, InternalServerErrorException, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { RedisService } from '@liaoliaots/nestjs-redis';
 import { ApiDocument } from './schemas/api.schema';
 import { ApiResponseDocument, ApiResponseModelName } from './schemas/apiResponse.schema';
@@ -48,15 +48,23 @@ async createApiResponse(createApiResponseDto: CreateApiResponseDto){
     }
 }
 
-async findApiResponses(id: string){
+
+// the query help group the data
+async findApiResponses(id: string) {
     try {
-        return await this.apiResponseModel.find({businessId: id})
-    } catch (error) {
-        if(error instanceof HttpException){
-            // return res.status(500).json({message: error.message})
-            throw error
+      return await this.apiResponseModel.aggregate([
+        { $match: { businessId: new mongoose.Types.ObjectId(id) } },
+        { $group: {
+            _id: "$apiId",
+            responses: { $push: "$$ROOT" }
+          }
         }
-        throw new InternalServerErrorException(error.message);
+      ]);
+    } catch (error) {
+      if(error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(error.message);
     }
-}
+  }
 }
