@@ -3,6 +3,7 @@ import * as mongoose from 'mongoose';
 // Define the schema
 export const ApiResponseSchema = new mongoose.Schema({
     url: { type: String, unique: false, required: true },
+    apiName:{ type: String, unique: false, required: true },
     apiId: { type: mongoose.Schema.Types.ObjectId, ref: 'Api', unique: false, required: true },
     statusCode:{ type: Number, required: true},
     responseTime: { type: Number, required: true},
@@ -16,6 +17,7 @@ export const ApiResponseSchema = new mongoose.Schema({
 // TypeScript interface for the document
 export interface ApiResponse {
     url: string;
+    apiName: string;
     apiId: mongoose.Types.ObjectId;
     statusCode: Number;
     responseTime: Number;

@@ -6,6 +6,7 @@ export const ApiSchema = new mongoose.Schema({
     url: { type: String, unique: true, required: true },
     businessId: { type: mongoose.Schema.Types.ObjectId, ref:'Business', unique: false, required: true},
     options:{type:Object, required: false},
+    apiName: { type: String, unique: false, required: true },
 }, {
     timestamps: true,
 });
@@ -15,6 +16,7 @@ export interface Api {
     url: string;
     businessId: string;
     options?: Object;
+    apiName: string;
     createdAt: Date;
 }
 

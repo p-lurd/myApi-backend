@@ -23,6 +23,7 @@ async createApi (createApiDto: CreateApiDto){
         const api: CreateApiDto = {
             url: createApiDto.url,
             businessId: createApiDto.businessId,
+            apiName: createApiDto.apiName,
         }
         if(createApiDto.options){ api.options=createApiDto.options}
        

@@ -15,7 +15,7 @@ func CronJob(client  *mongo.Client) {
 	c := cron.New()
 
 	// Schedule a job (Runs every 5 minute)
-	_, err := c.AddFunc("*/1 * * * *", func() {
+	_, err := c.AddFunc("*/5 * * * *", func() {
 		// Fetch API jobs
 	jobs := fetchjobs.FetchJobs(client)
 

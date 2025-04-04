@@ -19,6 +19,7 @@ import (
 type ApiJob struct {
     ID         bson.ObjectID `json:"id" bson:"_id,omitempty"`
     URL        string             `json:"url" bson:"url"`
+    ApiName    string               `json:"apiName" bson:"apiName"`
     BusinessID bson.ObjectID             `json:"businessId" bson:"businessId"`
     Options    any                `json:"options,omitempty" bson:"options,omitempty"`
     CreatedAt  time.Time          `json:"createdAt" bson:"createdAt"`
@@ -30,6 +31,7 @@ type ApiJob struct {
 type ApiResponse struct {
     URL          string             `json:"url"`
     ApiID        bson.ObjectID `json:"apiId" bson:"apiId"`
+    ApiName    string               `json:"apiName" bson:"apiName"`
     StatusCode   int                `json:"statusCode"`
     ResponseTime int64              `json:"responseTime"`
     Success      bool               `json:"success"`

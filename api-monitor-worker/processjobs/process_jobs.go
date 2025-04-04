@@ -35,6 +35,7 @@ func ProcessAndStoreAPIResponse(job models.ApiJob, client *mongo.Client) {
 	elapsedTime := time.Since(startTime).Milliseconds()
 	apiResponse := models.ApiResponse{
 		URL:          job.URL,
+		ApiName:	  job.ApiName,
 		ApiID:        job.ID,
 		BusinessID:   job.BusinessID,
 		ResponseTime: elapsedTime,
@@ -47,7 +48,8 @@ func ProcessAndStoreAPIResponse(job models.ApiJob, client *mongo.Client) {
 	} else {
 		defer resp.Body.Close()
 		apiResponse.StatusCode = resp.StatusCode
-		apiResponse.Success = resp.StatusCode >= 200 && resp.StatusCode < 300
+		// This is because if unauthorized, it means the api is still active
+		apiResponse.Success = resp.StatusCode < 500
 	}
 
 	// Store response in MongoDB
