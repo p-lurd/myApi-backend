@@ -26,6 +26,8 @@
 
 An api monitoring tool.
 Frontend is currently in works. check it out @ https://github.com/p-lurd/myApi-frontend
+![image](https://github.com/user-attachments/assets/9d243377-3d50-4c78-aa05-e0216eedd4aa)
+
 
 ## Project setup
 
