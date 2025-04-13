@@ -1,16 +1,13 @@
 import { HttpException, Injectable, InternalServerErrorException, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { RedisService } from '@liaoliaots/nestjs-redis';
 import { ApiDocument } from './schemas/api.schema';
 import { ApiResponseDocument, ApiResponseModelName } from './schemas/apiResponse.schema';
 import { CreateApiDto, CreateApiResponseDto } from './dto/create-api.dto';
-import Redis from 'ioredis';
 
 @Injectable()
 export class ApiMonitorService  {
   private readonly logger = new Logger(ApiMonitorService.name);
-  private redisClient: Redis;
 
   constructor(
     @InjectModel('Api') private readonly apiModel: Model<ApiDocument>,
