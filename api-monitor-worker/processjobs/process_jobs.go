@@ -33,12 +33,15 @@ func ProcessAndStoreAPIResponse(job models.ApiJob, client *mongo.Client) {
 	resp, err := clientHTTP.Get(url)
 
 	elapsedTime := time.Since(startTime).Milliseconds()
+	now := time.Now()
 	apiResponse := models.ApiResponse{
 		URL:          job.URL,
 		ApiName:	  job.ApiName,
 		ApiID:        job.ID,
 		BusinessID:   job.BusinessID,
 		ResponseTime: elapsedTime,
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 
 	if err != nil {
