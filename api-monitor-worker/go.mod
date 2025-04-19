@@ -1,4 +1,4 @@
-module exmaple.com/go-routine
+module weup.com/go-routine
 
 go 1.23.5
 

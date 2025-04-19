@@ -32,7 +32,6 @@ export class AuthService {
   ) {}
   async validateUser(profile: Profile, res: Response) {
     try {
-      console.log({ profile });
       const { displayName, emails, photos, id } = profile;
       const email = emails?.[0]?.value;
       const avatar = photos?.[0]?.value;
@@ -43,12 +42,13 @@ export class AuthService {
         email,
         avatar,
       };
-      console.log({ user });
       // user into database
       const userDoc = await this.usersService.create(user);
 
+      console.log({ userDoc });
       const dbUser: UserDto = {
-        _id: userDoc._id.toString(),
+        // _id: userDoc._id.toString(),
+        _id: userDoc._id,
         name: userDoc.name,
         email: userDoc.email,
         avatar: userDoc.avatar,
@@ -70,7 +70,8 @@ export class AuthService {
         'FRONTEND_URL',
         'http://localhost:3001',
       );
-      return res.json({user: dbUser}).redirect(FRONTEND_URL);
+      res.redirect(FRONTEND_URL)
+      // return res.json({user: dbUser}).redirect(FRONTEND_URL);
       // return user; // Return user object
     } catch (error) {
       console.log({ error });

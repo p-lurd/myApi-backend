@@ -5,25 +5,27 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
-	"time"
 	"os"
 	"strings"
+	"sync"
+	"time"
 
-	"exmaple.com/go-routine/models"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"weup.com/go-routine/models"
 )
 
 // ProcessAndStoreAPIResponse handles API calls and stores responses
 func ProcessAndStoreAPIResponse(job models.ApiJob, client *mongo.Client) {
 	startTime := time.Now()
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("❌ Error loading .env file")
-	}
-	dbName := os.Getenv("DB_NAME");
+	// Try to load development environment by default for local runs
+    // This will be silently ignored in Docker since Docker uses env_file
+	err := godotenv.Load(".env.development")
+    if err != nil {
+        log.Printf("Note: Could not load .env.development file (this is normal in Docker)")
+    }
+	dbName := os.Getenv("DB_NAME")
 
 	clientHTTP := http.Client{Timeout: 5 * time.Second}
 	var url = job.URL
@@ -36,12 +38,12 @@ func ProcessAndStoreAPIResponse(job models.ApiJob, client *mongo.Client) {
 	now := time.Now()
 	apiResponse := models.ApiResponse{
 		URL:          job.URL,
-		ApiName:	  job.ApiName,
+		ApiName:      job.ApiName,
 		ApiID:        job.ID,
 		BusinessID:   job.BusinessID,
 		ResponseTime: elapsedTime,
-		CreatedAt: now,
-		UpdatedAt: now,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	}
 
 	if err != nil {

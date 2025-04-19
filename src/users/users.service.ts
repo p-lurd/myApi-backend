@@ -22,13 +22,19 @@ export class UsersService {
         return user;
         // throw new userAlreadyExists('100CU')
       }
-      const salt = await bcrypt.genSalt(10);
+      if(password){
+        const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
       const newUser = await this.userModel.create({name, email, password:hashedPassword, avartar, githubId})
       // const param = {userId: newUser._id}
       // const userBusiness = await this.businessesService.updateUserBusiness(businessId, param);
       // if(!userBusiness){throw new userNotCreated('100CU')}
       return newUser;
+      }else{
+        const newUser = await this.userModel.create({name, email, avartar, githubId})
+      return newUser;
+      }
+      
     } catch (error) {
       console.log({error})
       // throw new userNotCreated('100CU')

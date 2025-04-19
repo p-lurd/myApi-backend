@@ -18,13 +18,14 @@ var Client *mongo.Client
 
 
 func ConnectDB() *mongo.Client {
-	// To get environmental variables
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("❌ Error loading .env file")
-	}
+	
+	// Try to load development environment by default for local runs
+    // This will be silently ignored in Docker since Docker uses env_file
+	err := godotenv.Load(".env.development")
+    if err != nil {
+        log.Printf("Note: Could not load .env.development file (this is normal in Docker)")
+    }
 	dbURL := os.Getenv("MONGODB_URI")
-
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

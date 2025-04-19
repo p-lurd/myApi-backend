@@ -21,7 +21,6 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
   async githubLoginCallback(@Req() req: AuthenticatedRequest, @Res() res: Response) {
-    console.log('github callback', req.user)
     return this.authService.validateUser(req.user, res);
     // return req.user; // Return user data after authentication
   }

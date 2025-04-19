@@ -2,10 +2,11 @@ import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/commo
 import { Request, Response, NextFunction } from 'express';
 import { UsersService } from '../../users/users.service';
 import * as jwt from 'jsonwebtoken';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService, private configService: ConfigService) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
     const token = req.cookies?.authToken;
@@ -15,7 +16,8 @@ export class AuthMiddleware implements NestMiddleware {
     }
 
     try {
-      const JWT_SECRET = process.env.JWT_SECRET!;
+      const JWT_SECRET = this.configService.get<string>('jwtSecret');
+      console.log({JWT_SECRET})
       const payload = jwt.verify(token, JWT_SECRET) as { _id: string; email: string };
 
       // Fetch user from DB
