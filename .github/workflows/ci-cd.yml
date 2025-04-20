@@ -25,8 +25,8 @@ jobs:
           dockerfile: Dockerfile
           registry: docker.io
           tags: latest, ${{ github.sha }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       # Build and push the microservice
       - name: Build and push API Monitor Worker(Golang)
         uses: mr-smithers-excellent/docker-build-push@v6
@@ -35,8 +35,8 @@ jobs:
           dockerfile: ./api-monitor-worker/Dockerfile
           registry: docker.io
           tags: latest, ${{ github.sha }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
   deploy-to-gcp:
     needs: build-and-push
     runs-on: ubuntu-latest
