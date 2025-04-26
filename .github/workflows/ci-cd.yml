@@ -21,20 +21,20 @@ jobs:
       - name: Build and push Backend Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
-          image: my-api/myapi-backend
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/my-api
           dockerfile: Dockerfile
           registry: docker.io
-          tags: latest, ${{ github.sha }}
+          tags: myapi-backend-latest, myapi-backend-${{ github.sha }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       # Build and push the microservice
       - name: Build and push API Monitor Worker(Golang)
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
-          image: my-api/myapi-microservice
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/my-api
           dockerfile: ./api-monitor-worker/Dockerfile
           registry: docker.io
-          tags: latest, ${{ github.sha }}
+          tags: myapi-microservice-latest, myapi-microservice-${{ github.sha }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
   deploy-to-gcp:
@@ -51,16 +51,16 @@ jobs:
       - name: Deploy Backend to Cloud Run
         run: |
           gcloud run deploy myapi-backend \
-            --image=jedit/myapi-backend:${{ github.sha }} \
+            --image=${{ secrets.DOCKERHUB_USERNAME }}/my-api:myapi-backend-${{ github.sha }} \
             --platform=managed \
-            --region=europe-west2 \
+            --region=us-central1 \
             --set-env-vars="GITHUB_CLIENT_ID=${{ secrets.GIT_CLIENT_ID }},GITHUB_CLIENT_SECRET=${{ secrets.GIT_CLIENT_SECRET }},GITHUB_CALLBACK_URL=${{ secrets.GIT_CALLBACK_URL }},FRONTEND_URL=${{ secrets.FRONTEND_URL }},JWT_SECRET=${{ secrets.JWT_SECRET }},MONGODB_URI=${{ secrets.MONGODB_URI }},PORT=${{ secrets.PORT }}" \
             --allow-unauthenticated
       - name: Deploy Go microservice to Cloud Run
         run: |
           gcloud run deploy myapi-microservice \
-            --image=jedit/myapi-microservice:${{ github.sha }} \
+            --image=${{ secrets.DOCKERHUB_USERNAME }}/my-api:myapi-microservice-${{ github.sha }} \
             --platform=managed \
-            --region=europe-west2 \
+            --region=us-central1 \
             --set-env-vars="MONGODB_URI=${{ secrets.MONGODB_URI }},DB_NAME=${{ secrets.DB_NAME }}" \
             --allow-unauthenticated

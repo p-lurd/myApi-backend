@@ -145,4 +145,33 @@ async findApiResponses(id: string) {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  // /**
+  //  * Fetches API status information for a given business ID.
+  //  * @param {Object} params - Object with the following properties:
+  //  *   - id: The business ID to fetch API status for.
+  //  *   - page: Page number to fetch (default: 1).
+  //  *   - limit: Number of results to limit to (default: 30).
+  //  *   - apiIdFilter: Optional API ID to filter by.
+  //  * @returns {Promise<ApiResponseDocument[]>} - A promise resolving to an array of API response documents.
+  //  */
+  async fetchApiStatus({businessId, page = 1, limit = 30, apiIdFilter = null}) {
+    try {
+      const searchQuery: any = { businessId };
+    if (apiIdFilter) {
+      searchQuery.apiId = apiIdFilter;
+    }
+      const res = await this.apiResponseModel.find(searchQuery).skip((page - 1) * limit).limit(limit).exec();
+      if(!res){
+        throw new Error("no data found")
+      }
+      return res;
+    } catch (error) {
+      if(error instanceof HttpException){
+        // return res.status(500).json({message: error.message})
+        throw error
+    }
+    throw new InternalServerErrorException(error.message);
+    }
+  }
 }

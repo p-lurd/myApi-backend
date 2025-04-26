@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UsePipes, ValidationPipe } from "@nestjs/common";
 import { ApiMonitorService } from "./api-monitor.service";
 import { CreateApiDto } from "./dto/create-api.dto";
+import { FetchApiStatusDto } from "./dto/fetch-api-dashboard.dto";
 
 
 @Controller('api')
@@ -15,5 +16,13 @@ export class ApisController {
   @Get(':id')
   findAll(@Param('id') id: string){
     return this.apiMonitorService.findApiResponses(id)
+  }
+
+  @Get('dashboad/:businessId')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  findDashboard(
+    @Param('businessId') businessId: string,
+    @Query()query:FetchApiStatusDto) {
+    return this.apiMonitorService.fetchApiStatus({...query, businessId}) 
   }
 }
