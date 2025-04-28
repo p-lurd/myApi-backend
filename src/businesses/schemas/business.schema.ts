@@ -3,8 +3,8 @@ import * as mongoose from 'mongoose';
 // Define the schema
 export const BusinessSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    email: { type: String, unique: true, required: true },
-    githubId: { type: String, unique: true},
+    email: { type: String, unique: false, required: true },
+    githubId: { type: String, unique: false},
     creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, {
     timestamps: true,

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
@@ -13,6 +13,7 @@ import { BusinessSchema } from 'src/businesses/schemas/business.schema';
 import { BusinessUserSchema } from 'src/businesses/schemas/user-business.schema';
 import { BusinessesModule } from 'src/businesses/businesses.module';
 import { BusinessesService } from 'src/businesses/businesses.service';
+import { AuthMiddleware } from './userMiddleware/authenticateUser.middleware.';
 
 @Module({
   imports: [
@@ -37,4 +38,13 @@ import { BusinessesService } from 'src/businesses/businesses.service';
   controllers: [AuthController],
   exports: [AuthService],
 })
-export class AuthModule {}
+
+export class AuthModule{}
+
+// This is to apply it to all routes in this module
+
+// export class AuthModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer){
+//     consumer.apply(AuthMiddleware).forRoutes('*');
+//   }
+// }

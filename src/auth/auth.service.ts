@@ -44,8 +44,6 @@ export class AuthService {
       };
       // user into database
       const userDoc = await this.usersService.create(user);
-
-      console.log({ userDoc });
       const dbUser: UserDto = {
         // _id: userDoc._id.toString(),
         _id: userDoc._id,
@@ -56,7 +54,9 @@ export class AuthService {
       };
 
       // update the user business relationship to add userId
-      const userBusiness = await this.businessesService.updateUserBusiness(dbUser.email, {userId:dbUser._id})
+      // const userBusiness = await this.businessesService.updateUserBusiness(dbUser.email, {userId:dbUser._id})
+      // // create the userBusiness relationship
+      // const userBusiness = await this.businessesService.createUserBusiness(dbUser.name, dbUser._id.toString(), dbUser.email, ROLES.user, dbUser._id.toString());
 
       const token = await tokenify(this.jwtService, dbUser._id, dbUser.email);
       res.cookie('authToken', token, {
@@ -70,7 +70,7 @@ export class AuthService {
         'FRONTEND_URL',
         'http://localhost:3001',
       );
-      res.redirect(FRONTEND_URL)
+      res.redirect(FRONTEND_URL);
       // return res.json({user: dbUser}).redirect(FRONTEND_URL);
       // return user; // Return user object
     } catch (error) {
@@ -93,16 +93,18 @@ export class AuthService {
         user._id.toString(),
         user.email,
       );
+      // update the user business relationship to add userId
+      const userBusiness = await this.businessesService.updateUserBusiness(user.email, {userId:user._id})
       res.cookie('authToken', token, {
         httpOnly: true,
         // Set "secure" to true in production with HTTPS
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
       });
       return res.status(201).json(user);
     } catch (error) {
-      console.error('Registration Error:', error); // Improved debugging
+      // console.error('Registration Error:', error); // Improved debugging
 
     if (error instanceof UnauthorizedException) {
       return res.status(401).json({ message: error.message });
@@ -116,7 +118,7 @@ export class AuthService {
     try {
       const { email, password } = loginUserDto;
       const user = await this.usersService.getUserDetails({ email: email });
-      if (!user) {
+      if (!user || !user.password) {
         throw new UnauthorizedException('message: wrong email or password');
       }else{
         const isValidPassword = await bcrypt.compare(password, user.password);
@@ -145,5 +147,15 @@ export class AuthService {
       console.log(error);
       throw error;
     }
+  }
+  async logout(res: Response) {
+    res.clearCookie('authToken', {
+      httpOnly: true,
+      // Set "secure" to true in production with HTTPS
+      secure: process.env.NODE_ENV === 'production', 
+      // sameSite: 'strict', // or 'lax', depending on your frontend-backend setup
+    });
+    return res.status(200).json({ message: 'Logged out successfully' });
+  
   }
 }

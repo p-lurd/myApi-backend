@@ -10,14 +10,12 @@ export class AuthMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction) {
     const token = req.cookies?.authToken;
-
     if (!token) {
       throw new UnauthorizedException('Unauthorized: No token provided');
     }
 
     try {
       const JWT_SECRET = this.configService.get<string>('jwtSecret');
-      console.log({JWT_SECRET})
       const payload = jwt.verify(token, JWT_SECRET) as { _id: string; email: string };
 
       // Fetch user from DB

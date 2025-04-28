@@ -31,9 +31,20 @@ export class AuthController {
     return this.authService.register(registerUserDto, res)
   }
 
+  @Get('me')
+// @UseGuards(AuthGuard()) // use your auth guard
+  getProfile(@Req() req: Request) {
+  return req.user;
+}
+
   @Post('login')
   @UsePipes(new ValidationPipe({whitelist: true}))
     async login(@Body() loginUserDto: LoginUserDto, @Res() res: Response){
       return this.authService.login(loginUserDto, res)
     }
+
+  @Post('logout')
+  async logout(@Res() res: Response){
+    return this.authService.logout(res)
+  }
 }

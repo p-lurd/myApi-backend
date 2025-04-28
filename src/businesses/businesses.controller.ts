@@ -38,7 +38,6 @@ export class BusinessesController {
   @Post('worker')
   createUserBusiness(@Body() createUserBusinessDto: CreateUserBusinessDto) {
     const{ name, businessId, userId, email, role} = createUserBusinessDto;
-    console.log({createUserBusinessDto})
     return this.businessesService.createUserBusiness(name, businessId, email, role, userId);
   }
 }

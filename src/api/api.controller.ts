@@ -13,16 +13,14 @@ export class ApisController {
     return this.apiMonitorService.createApi(createApiDto)
   }
 
-  @Get(':id')
+  @Get('all/:id')
   findAll(@Param('id') id: string){
     return this.apiMonitorService.findApiResponses(id)
   }
 
-  @Get('dashboad/:businessId')
+  @Get('dashboard/:businessId')
   @UsePipes(new ValidationPipe({ transform: true }))
-  findDashboard(
-    @Param('businessId') businessId: string,
-    @Query()query:FetchApiStatusDto) {
-    return this.apiMonitorService.fetchApiStatus({...query, businessId}) 
+  findDashboard(@Param('businessId') businessId: string, @Query()query:FetchApiStatusDto) {
+    return this.apiMonitorService.fetchApiStatus({businessId,...query}) 
   }
 }

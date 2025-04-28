@@ -47,24 +47,21 @@ export class BusinessesService {
 
   //  to find all the business an admin has access to
   async findAll(id: string) {
-  try {
-    if(!id){throw new BadRequestException("the param: id is absent")}
-    const businesses = new Set();
-    const userBusinesses = await this.businessUserModel.find({ userId: id });
-    const businessPromises = userBusinesses.map(async (UB) => {
-        const business = await this.businessModel.findOne({ _id: UB.businessId });
-        if (business) return business;
-    });
-    const businessesArray = await Promise.all(businessPromises);
-    businessesArray.forEach(business => {
-        if (business) businesses.add(business);
-    });
-    return  [...businesses] ;
-  } catch (error) {
-    return error.message;
+    try {
+      if(!id) {
+        throw new BadRequestException("the param: id is absent");
+      }
+      const userBusinesses = await this.businessUserModel.find({ userId: id });
+      const businessIds = [...new Set(userBusinesses.map(ub => ub.businessId.toString()))];
+
+      const businesses = await this.businessModel.find({ 
+        _id: { $in: businessIds }
+      });
+      return businesses;
+    } catch (error) {
+      return error.message;
+    } 
   }
-    
-}
 
 
   // findOne(id: number) {
@@ -79,9 +76,10 @@ export class BusinessesService {
   //   return `This action removes a #${id} business`;
   // }
 
-  async createUserBusiness(name: string, businessId: string, email: string, role: ROLES, userId?: string){
+  async createUserBusiness(name: string, businessId: string, email: string, role: string | ROLES, userId?: string){
     try {
-      const userBusinessData: any = { name, businessId, userEmail:email, role };
+      const normalizedRole = typeof role === 'string' ? ROLES[role as keyof typeof ROLES] : role;
+      const userBusinessData: any = { name, businessId, userEmail:email, role:normalizedRole };
       if (userId && mongoose.Types.ObjectId.isValid(userId)) {
         userBusinessData.userId = new mongoose.Types.ObjectId(userId);
       }
@@ -96,21 +94,21 @@ export class BusinessesService {
   }
 
 
-  async updateUserBusiness(email: string, param){
-    const userBusiness = await this.businessUserModel.updateOne({
-      userEmail: email,
-      param,
-      function (err, docs){
-        if (err){
-          console.error(err.message)
-            throw new userBusinessNotUpdated('100UUB')
-        }
-        else{
-            return {userBusiness: docs}
-        }
+  async updateUserBusiness(email: string, param) {
+    try {
+      const userBusiness = await this.businessUserModel.updateOne(
+        { userEmail: email }, // query to find the document
+        { $set: param }       // update to apply
+      );
+      
+      if (userBusiness.modifiedCount === 0) {
+        throw new userBusinessNotUpdated('100UUB');
       }
-    });
-    return userBusiness
-  
+      
+      return { userBusiness };
+    } catch (err) {
+      console.error(err.message);
+      throw new userBusinessNotUpdated('100UUB');
+    }
   }
 }

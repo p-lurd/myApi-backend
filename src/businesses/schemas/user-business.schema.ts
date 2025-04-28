@@ -3,7 +3,7 @@ import { ROLES } from 'src/utilities/userRoles.enum';
  
 // Define the schema
 export const BusinessUserSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false, default: null },
     businessId: { type: mongoose.Schema.Types.ObjectId, ref: 'Business', required: true },
     userEmail:{type: String, required: true},
     role: { 
