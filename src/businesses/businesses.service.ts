@@ -79,7 +79,11 @@ export class BusinessesService {
   async createUserBusiness(name: string, businessId: string, email: string, role: string | ROLES, userId?: string){
     try {
       const normalizedRole = typeof role === 'string' ? ROLES[role as keyof typeof ROLES] : role;
-      const userBusinessData: any = { name, businessId, userEmail:email, role:normalizedRole };
+      let userBusinessData: any = { name, businessId, userEmail:email, role:normalizedRole };
+      const user = await this.usersService.getUserDetails({ email });
+      if(user){
+        userBusinessData.userId = user._id
+      }
       if (userId && mongoose.Types.ObjectId.isValid(userId)) {
         userBusinessData.userId = new mongoose.Types.ObjectId(userId);
       }
@@ -87,8 +91,7 @@ export class BusinessesService {
     if(!userBusiness){throw new userBusinessNotCreated('100CUB')}
     return userBusiness
     } catch (error) {
-      console.log(error)
-      return error.message;
+      throw new userBusinessNotCreated('100CUB')
     }
     
   }
