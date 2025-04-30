@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { forwardRef, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
@@ -14,11 +14,12 @@ import { BusinessUserSchema } from 'src/businesses/schemas/user-business.schema'
 import { BusinessesModule } from 'src/businesses/businesses.module';
 import { BusinessesService } from 'src/businesses/businesses.service';
 import { AuthMiddleware } from './userMiddleware/authenticateUser.middleware.';
+import { BusinessAuthService } from './guards/business-auth.service';
 
 @Module({
   imports: [
     UsersModule,
-    BusinessesModule,
+    forwardRef(() => BusinessesModule),
     ConfigModule.forRoot({ isGlobal: true }),
     PassportModule.register({ defaultStrategy: 'github' }),
     MongooseModule.forFeature([
@@ -34,9 +35,9 @@ import { AuthMiddleware } from './userMiddleware/authenticateUser.middleware.';
       }),
     }),
   ],
-  providers: [AuthService, GithubStrategy],
+  providers: [AuthService, GithubStrategy, BusinessAuthService],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, BusinessAuthService],
 })
 
 export class AuthModule{}
