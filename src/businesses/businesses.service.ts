@@ -64,9 +64,17 @@ export class BusinessesService {
   }
 
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} business`;
-  // }
+  async findOne(id: string) {
+    try {
+      if(!id) {
+        throw new BadRequestException("the param: id is absent");
+      }
+      const business = await this.businessModel.findById(id);
+      return business;
+    } catch (error) {
+      return error.message;
+    }
+  }
 
   // update(id: number, updateBusinessDto: UpdateBusinessDto) {
   //   return `This action updates a #${id} business`;

@@ -1,17 +1,20 @@
-import { HttpException, Injectable, InternalServerErrorException, Logger, OnModuleInit } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { ApiDocument } from './schemas/api.schema';
 import { ApiResponseDocument, ApiResponseModelName } from './schemas/apiResponse.schema';
 import { CreateApiDto, CreateApiResponseDto } from './dto/create-api.dto';
+import { BusinessDocument, BusinessModelName } from 'src/businesses/schemas/business.schema';
+import { BusinessesService } from 'src/businesses/businesses.service';
 
 @Injectable()
 export class ApiMonitorService  {
   private readonly logger = new Logger(ApiMonitorService.name);
-
+  
   constructor(
     @InjectModel('Api') private readonly apiModel: Model<ApiDocument>,
     @InjectModel(ApiResponseModelName) private readonly apiResponseModel: Model<ApiResponseDocument>,
+    private readonly businessesService: BusinessesService
   ) {}
 
 //   route to create apis
@@ -50,37 +53,22 @@ async createApiResponse(createApiResponseDto: CreateApiResponseDto){
 // the query help group the data
 async findApiResponses(id: string) {
     try {
-      // const structures=  await this.apiResponseModel.aggregate([
-      //   { $match: { businessId: new mongoose.Types.ObjectId(id) } },
-      //   { $sort: { createdAt: -1 } }, // Sort by createdAt field in descending order
-      //   { $group: {
-      //       _id: "$apiId",
-      //       responses: { 
-      //         $push: "$$ROOT" 
-      //       }
-      //     }
-      //   },
-      //   { $project: {
-      //       _id: 1,
-      //       responses: { $slice: ["$responses", 0, 30] } // Take only the first 30 responses
-      //     }
-      //   }
-      // ]);
-      // console.log(structures)
+      const business = await this.businessesService.findOne(id);
+      if(!business) throw new NotFoundException('Business does not exist, check the url');
       const data = await this.apiResponseModel.aggregate([
-        // Stage 1: Match by business ID
+        //Match by business ID
         { $match: { businessId: new mongoose.Types.ObjectId(id) } },
         
-        // Stage 2: Create a date field for grouping
+        // Create a date field for grouping
         { $addFields: {
             dateString: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
           }
         },
         
-        // Stage 3: Sort by timestamp (newest first) to ensure we get the latest first
+        // Sort by timestamp (newest first) to ensure we get the latest first
         { $sort: { createdAt: -1 } },
         
-        // Stage 4: Group by API ID, date, and success to separate error and non-error responses
+        // Group by API ID, date, and success to separate error and non-error responses
         { $group: {
             _id: {
               apiId: "$apiId",
@@ -91,7 +79,7 @@ async findApiResponses(id: string) {
           }
         },
         
-        // Stage 5: Group again by API ID and date to select the appropriate response per day
+        // Group again by API ID and date to select the appropriate response per day
         { $group: {
             _id: {
               apiId: "$_id.apiId",
@@ -145,16 +133,6 @@ async findApiResponses(id: string) {
       throw new InternalServerErrorException(error.message);
     }
   }
-
-  // /**
-  //  * Fetches API status information for a given business ID.
-  //  * @param {Object} params - Object with the following properties:
-  //  *   - id: The business ID to fetch API status for.
-  //  *   - page: Page number to fetch (default: 1).
-  //  *   - limit: Number of results to limit to (default: 30).
-  //  *   - apiIdFilter: Optional API ID to filter by.
-  //  * @returns {Promise<ApiResponseDocument[]>} - A promise resolving to an array of API response documents.
-  //  */
   async fetchApiStatus({businessId, page = 1, limit = 30, apiIdFilter = null}) {
     try {
       const searchQuery: any = { businessId };

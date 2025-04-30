@@ -20,10 +20,8 @@ export class BusinessesController {
     return this.businessesService.createBusiness(name, email, githubId, ownerId);
   }
 
-  //  to find all the business an admin has access to
+  //  to find all the business someone has access to
   @Get(':id')
-  @RequireBusinessRoles(ROLES.superAdmin, ROLES.admin)
-  @UseGuards(BusinessRolesGuard)
   findAll(@Param('id') id: string) {
     return this.businessesService.findAll(id);
   }
