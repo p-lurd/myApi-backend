@@ -18,6 +18,8 @@ import { BusinessesService } from 'src/businesses/businesses.service';
 import { Model } from 'mongoose';
 import { BusinessUserDocument, BusinessUserModelName } from 'src/businesses/schemas/user-business.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { plainToInstance } from 'class-transformer';
+import { FilteredUserDto } from 'src/users/dto/filtered-user.dto';
 
 
 @Injectable()
@@ -52,7 +54,8 @@ export class AuthService {
         avatar: userDoc.avatar,
         createdAt: userDoc.createdAt,
       };
-
+      // Ctreate a test business for the person signing up
+      
       // update the user business relationship to add userId
       // const userBusiness = await this.businessesService.updateUserBusiness(dbUser.email, {userId:dbUser._id})
       // // create the userBusiness relationship
@@ -102,7 +105,11 @@ export class AuthService {
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
       });
-      return res.status(201).json(user);
+      return plainToInstance(FilteredUserDto, user.toObject?.() || user, {
+        excludeExtraneousValues: true,
+        enableImplicitConversion: true
+      });
+      // return res.status(201).json(user);
     } catch (error) {
       // console.error('Registration Error:', error); // Improved debugging
 
@@ -141,7 +148,8 @@ export class AuthService {
           sameSite: 'strict',
           maxAge: 60 * 60 * 1000,
         });
-        res.status(200).json(user);
+        const filteredUser = plainToInstance(FilteredUserDto, user.toObject(), { excludeExtraneousValues: true, enableImplicitConversion: true  });
+        res.status(200).json(filteredUser);
       }
     } catch (error) {
       console.log(error);

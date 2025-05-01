@@ -7,6 +7,8 @@ import { UserDocument, UserModelName } from './schemas/user.schema';
 import { userAlreadyExists, userNotCreated } from 'src/utilities/exceptions/httpExceptions';
 import * as bcrypt from 'bcryptjs';
 import { BusinessesService } from 'src/businesses/businesses.service';
+import { plainToInstance } from 'class-transformer';
+import { FilteredUserDto } from './dto/filtered-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -26,10 +28,9 @@ export class UsersService {
         const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
       const newUser = await this.userModel.create({name, email, password:hashedPassword, avartar, githubId})
-      // const param = {userId: newUser._id}
-      // const userBusiness = await this.businessesService.updateUserBusiness(businessId, param);
-      // if(!userBusiness){throw new userNotCreated('100CU')}
       return newUser;
+      // returning filtered user instead
+      // return plainToInstance(FilteredUserDto, newUser.toObject(), { excludeExtraneousValues: true });
       }else{
         const newUser = await this.userModel.create({name, email, avartar, githubId})
       return newUser;
@@ -59,7 +60,9 @@ export class UsersService {
   // }
 
   async getUserDetails(identifier){
-    const user: UserDto = await this.userModel.findOne(identifier)
+    // removed :UserDto type
+    const user = await this.userModel.findOne(identifier)
+    // console.log({user})
     return user
   }
 }

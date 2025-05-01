@@ -33,7 +33,6 @@ export class BusinessesService {
         githubId,
         creatorId: ownerId,
       });
-
       const userBusiness = await this.businessUserModel.create({businessId: business._id, userId: owner._id, userEmail:email, role: ROLES.superAdmin});
       if(!business || !userBusiness) {throw new InternalServerErrorException("message: error creating business")}
         const param = {userId: owner._id}

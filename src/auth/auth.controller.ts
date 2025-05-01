@@ -15,6 +15,8 @@ import { Request, Response } from 'express';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard as ModAuthguard } from './guards/auth.guard';
+import { plainToInstance } from 'class-transformer';
+import { FilteredUserDto } from 'src/users/dto/filtered-user.dto';
 
 export interface AuthenticatedRequest extends Request {
   user?: any;
@@ -51,7 +53,13 @@ export class AuthController {
   @Get('me')
   @UseGuards(ModAuthguard) // use your auth guard
   getProfile(@Req() req: Request) {
-    return req.user;
+    // return req.user;
+    const user = typeof req.user?.toObject === 'function' ? req.user.toObject() : req.user;
+
+  return plainToInstance(FilteredUserDto, user, {
+    excludeExtraneousValues: true,
+    enableImplicitConversion: true
+  });
   }
 
   @Post('login')

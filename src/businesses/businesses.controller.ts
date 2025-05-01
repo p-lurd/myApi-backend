@@ -4,7 +4,7 @@ import { CreateBusinessDto, CreateUserBusinessDto } from './dto/create-business.
 import { UpdateBusinessDto } from './dto/update-business.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { BusinessRolesGuard } from 'src/auth/guards/business-roles.guard';
-import { RequireBusinessRoles } from 'src/auth/guards/business-roles.decorator';
+import { RequireBusinessRoles, RequireSuperAdmin } from 'src/auth/guards/business-roles.decorator';
 import { ROLES } from 'src/utilities/userRoles.enum';
 
 @Controller('businesses')
@@ -13,7 +13,8 @@ export class BusinessesController {
   constructor(private readonly businessesService: BusinessesService) {}
 
   @Post()
-  @RequireBusinessRoles(ROLES.superAdmin)
+  // @RequireBusinessRoles(ROLES.superAdmin)
+  @RequireSuperAdmin()
   @UseGuards(BusinessRolesGuard)
   create(@Body() createBusinessDto: CreateBusinessDto) {
     const{ name, email, githubId, ownerId} = createBusinessDto
