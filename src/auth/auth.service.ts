@@ -65,7 +65,7 @@ export class AuthService {
       res.cookie('authToken', token, {
         httpOnly: true,
         // Set "secure" to true in production with HTTPS
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
       });
@@ -144,7 +144,7 @@ export class AuthService {
         res.cookie('authToken', token, {
           httpOnly: true,
           // Set "secure" to true in production with HTTPS
-          secure: false,
+          secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
           maxAge: 60 * 60 * 1000,
         });
