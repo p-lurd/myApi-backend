@@ -11,6 +11,8 @@ import { ApiMonitorModule } from './api/api.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import configuration from './config/configuration';
 import { AuthMiddleware } from './auth/userMiddleware/authenticateUser.middleware.';
+import { ThrottlerModule, ThrottlerGuard  } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 
 
@@ -32,9 +34,23 @@ import { AuthMiddleware } from './auth/userMiddleware/authenticateUser.middlewar
     BusinessesModule,
     ApiMonitorModule,
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ],
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    }
+  ],
 })
 // export class AppModule {}
 
@@ -43,6 +59,7 @@ export class AppModule implements NestModule {
     consumer
       .apply(AuthMiddleware)
       .exclude(
+        '/',
         'auth/login',
         'auth/register',
         'auth/github',
