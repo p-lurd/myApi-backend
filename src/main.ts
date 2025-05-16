@@ -1,11 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { AuthMiddleware } from './auth/userMiddleware/authenticateUser.middleware.';
 import * as cookieParser from 'cookie-parser';
 import { customCorsMiddleware } from './middlewares/cors.middleware';
-import { ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
