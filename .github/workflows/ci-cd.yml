@@ -1,66 +1,102 @@
-name: Build and Push to Docker Hub, Deploy to GCP
+name: Deploy Service
 
-on:
+on: 
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+env:
+  NEST_IMAGE_NAME: ${{ secrets.NEST_IMAGE_NAME }}
+  GO_IMAGE_NAME: ${{ secrets.GO_IMAGE_NAME }}
+  ARTIFACT_REGISTRY_REPOSITORY: ${{ secrets.ARTIFACT_REGISTRY_REPOSITORY }}
+  ARTIFACT_REGISTRY: ${{ secrets.ARTIFACT_REGISTRY }}
+  CLOUD_RUN_REGION: ${{ secrets.CLOUD_RUN_REGION }}
+  IMAGE_TAG: ${{ github.sha }}
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PORT: ${{ secrets.PORT }}
 
 jobs:
-  build-and-push:
+
+  build:
+
+    name: We-Up Instance Deployment
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
+
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup GCP Service Account
+        uses: google-github-actions/setup-gcloud@v0.2.0
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
-      - name: Build and push Backend Docker image
-        uses: mr-smithers-excellent/docker-build-push@v6
+          version: 'latest'
+          project_id: ${{ env.PROJECT_ID }}
+          service_account_email: ${{ secrets.GCP_CI_PROD_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_CI_PROD_SA_KEY_BASE64 }}
+          
+      - name: base64-to-file
+        id: write_file
+        uses: timheuer/base64-to-file@v1.2 
         with:
-          image: ${{ secrets.DOCKERHUB_USERNAME }}/my-api
-          dockerfile: Dockerfile
-          registry: docker.io
-          tags: myapi-backend-latest, myapi-backend-${{ github.sha }}
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      # Build and push the microservice
-      - name: Build and push API Monitor Worker(Golang)
-        uses: mr-smithers-excellent/docker-build-push@v6
-        with:
-          image: ${{ secrets.DOCKERHUB_USERNAME }}/my-api
-          dockerfile: ./api-monitor-worker/Dockerfile
-          registry: docker.io
-          tags: myapi-microservice-latest, myapi-microservice-${{ github.sha }}
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-  deploy-to-gcp:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Google Cloud CLI
-        uses: google-github-actions/setup-gcloud@v0
-        with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          export_default_credentials: true
-      
-      - name: Deploy Backend to Cloud Run
+          # Name of the file when written to temp location
+          fileName: 'key.json'
+          # The base64 encoded string
+          encodedString: ${{ secrets.GCP_CI_PROD_SA_KEY_BASE64 }}
+
+      - name: Configure Docker
         run: |
-          gcloud run deploy myapi-backend \
-            --image=${{ secrets.DOCKERHUB_USERNAME }}/my-api:myapi-backend-${{ github.sha }} \
-            --platform=managed \
-            --region=us-central1 \
-            --set-env-vars="GITHUB_CLIENT_ID=${{ secrets.GIT_CLIENT_ID }},GITHUB_CLIENT_SECRET=${{ secrets.GIT_CLIENT_SECRET }},GITHUB_CALLBACK_URL=${{ secrets.GIT_CALLBACK_URL }},FRONTEND_URL=${{ secrets.FRONTEND_URL }},JWT_SECRET=${{ secrets.JWT_SECRET }},MONGODB_URI=${{ secrets.MONGODB_URI }},PORT=${{ secrets.PORT }}" \
-            --allow-unauthenticated
-      - name: Deploy Go microservice to Cloud Run
+          gcloud auth configure-docker $ARTIFACT_REGISTRY
+      - name: Load NestJs envs and save to .env file
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_API_ROOT_PATH:  ${{ secrets.NEST_API_ROOT_PATH }}
+          GITHUB_CLIENT_ID: ${{ secrets.GIT_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GIT_CLIENT_SECRET }}
+          GITHUB_CALLBACK_URL: ${{ secrets.GITHUB_CALLBACK_URL }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          PORT: ${{ secrets.PORT }}
+          file_name: .env
+      - name: Load Go microservice envs and save to .env file
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_API_ROOT_PATH:  ${{ secrets.GO_API_ROOT_PATH }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+      - name: Build NestJs Backend
+        # env:
+        #   DOCKER_IMAGE_TAG: ${{ github.ref }}
         run: |
-          gcloud run deploy myapi-microservice \
-            --image=${{ secrets.DOCKERHUB_USERNAME }}/my-api:myapi-microservice-${{ github.sha }} \
-            --platform=managed \
-            --region=us-central1 \
-            --set-env-vars="MONGODB_URI=${{ secrets.MONGODB_URI }},DB_NAME=${{ secrets.DB_NAME }}" \
-            --allow-unauthenticated
+          docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:$IMAGE_TAG -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:latest .
+          # docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:${DOCKER_IMAGE_TAG} .
+      - name: Build Golang Microservice
+        run: |
+          docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:$IMAGE_TAG -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:latest ./api-monitor-worker
+          # docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:${DOCKER_IMAGE_TAG} ./api-monitor-worker
+
+      - name: Output Docker Images
+        run: |
+          docker images
+      - name: Authenticating Artifact Repository
+        run: |
+          cat ${{ steps.write_file.outputs.filePath }} | docker login -u _json_key --password-stdin https://$ARTIFACT_REGISTRY
+      - name: Push Nest Backend
+        # env:
+        #   DOCKER_IMAGE_TAG: ${{ github.ref }}
+        run: |
+          docker push -a $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME
+          # docker push $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:${DOCKER_IMAGE_TAG}
+      - name: Push Go Microservice
+        run: |
+          docker push -a $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME
+          # docker push $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:${DOCKER_IMAGE_TAG}
+      - name: Deploy we-up backend To Cloud Run Instance
+        run: |
+          gcloud run deploy we-up --image $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:$IMAGE_TAG --project ${{ env.PROJECT_ID }} --platform managed --region $CLOUD_RUN_REGION --allow-unauthenticated
+
+      - name: Deploy we-up Go Microservice To Cloud Run Instance
+        run: |
+          gcloud run deploy we-up --image $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:$IMAGE_TAG --project ${{ env.PROJECT_ID }} --platform managed --region $CLOUD_RUN_REGION --allow-unauthenticated
