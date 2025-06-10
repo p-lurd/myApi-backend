@@ -19,7 +19,7 @@ async function bootstrap() {
   const allowedOrigins = configService.get<string>('allowedOrigins')?.split(',') || ['http://localhost:5173'];
 
 app.use(customCorsMiddleware(allowedOrigins));
-  await app.listen(configService.get<string>('port') || 3000, '0.0.0.0');
+  await app.listen(configService.get<string>('port') || 8080, '0.0.0.0');
   console.log(`server running on port:${configService.get<string>('port')}`);
 }
 bootstrap();
