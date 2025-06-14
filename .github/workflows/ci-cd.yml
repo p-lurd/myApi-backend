@@ -104,4 +104,4 @@ jobs:
 
       - name: Deploy we-up Go Microservice To Cloud Run Instance
         run: |
-          gcloud run deploy we-up --image $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:$IMAGE_TAG --project ${{ env.PROJECT_ID }} --platform managed --region $CLOUD_RUN_REGION --allow-unauthenticated
+          gcloud run deploy we-up-microservice --image $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:$IMAGE_TAG --project ${{ env.PROJECT_ID }} --platform managed --region $CLOUD_RUN_REGION --allow-unauthenticated
