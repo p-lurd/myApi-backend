@@ -48,26 +48,29 @@ jobs:
       - name: Configure Docker
         run: |
           gcloud auth configure-docker $ARTIFACT_REGISTRY
-      - name: Load NestJs envs and save to .env file
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_API_ROOT_PATH:  ${{ secrets.NEST_API_ROOT_PATH }}
-          envkey_GITHUB_CLIENT_ID: ${{ secrets.GIT_CLIENT_ID }}
-          envkey_GITHUB_CLIENT_SECRET: ${{ secrets.GIT_CLIENT_SECRET }}
-          envkey_GITHUB_CALLBACK_URL: ${{ secrets.GITHUB_CALLBACK_URL }}
-          envkey_FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-          envkey_JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          envkey_MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          envkey_PORT: ${{ secrets.PORT }}
-          file_name: .env
-          fail_on_empty: false
-          sort_keys: false
-      - name: Load Go microservice envs and save to .env file
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_API_ROOT_PATH:  ${{ secrets.GO_API_ROOT_PATH }}
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          DB_NAME: ${{ secrets.DB_NAME }}
+      # - name: Load NestJs envs and save to .env file
+      #   uses: SpicyPizza/create-envfile@v1.3
+      #   with:
+      #     envkey_API_ROOT_PATH:  ${{ secrets.NEST_API_ROOT_PATH }}
+      #     envkey_GITHUB_CLIENT_ID: ${{ secrets.GIT_CLIENT_ID }}
+      #     envkey_GITHUB_CLIENT_SECRET: ${{ secrets.GIT_CLIENT_SECRET }}
+      #     envkey_GITHUB_CALLBACK_URL: ${{ secrets.GITHUB_CALLBACK_URL }}
+      #     envkey_FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+      #     envkey_JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      #     envkey_MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      #     envkey_PORT: ${{ secrets.PORT }}
+      #     file_name: .env
+      #     fail_on_empty: false
+      #     sort_keys: false
+      # - name: Load Go microservice envs and save to .env file
+      #   uses: SpicyPizza/create-envfile@v1.3
+      #   with:
+      #     envkey_API_ROOT_PATH:  ${{ secrets.GO_API_ROOT_PATH }}
+      #     envkey_MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      #     envkey_DB_NAME: ${{ secrets.DB_NAME }}
+      #     file_name: .env
+      #     fail_on_empty: false
+      #     sort_keys: false
       - name: Build NestJs Backend
         # env:
         #   DOCKER_IMAGE_TAG: ${{ github.ref }}
