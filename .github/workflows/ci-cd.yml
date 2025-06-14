@@ -77,10 +77,10 @@ jobs:
         run: |
           docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:$IMAGE_TAG -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:latest .
           # docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:${DOCKER_IMAGE_TAG} .
-      # - name: Build Golang Microservice
-      #   run: |
-      #     docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:$IMAGE_TAG -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:latest ./api-monitor-worker
-      #     # docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:${DOCKER_IMAGE_TAG} ./api-monitor-worker
+      - name: Build Golang Microservice
+        run: |
+          docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:$IMAGE_TAG -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:latest ./api-monitor-worker
+          # docker build -t $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:${DOCKER_IMAGE_TAG} ./api-monitor-worker
 
       - name: Output Docker Images
         run: |
@@ -94,14 +94,14 @@ jobs:
         run: |
           docker push -a $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME
           # docker push $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:${DOCKER_IMAGE_TAG}
-      # - name: Push Go Microservice
-      #   run: |
-      #     docker push -a $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME
-      #     # docker push $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:${DOCKER_IMAGE_TAG}
+      - name: Push Go Microservice
+        run: |
+          docker push -a $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME
+          # docker push $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:${DOCKER_IMAGE_TAG}
       - name: Deploy we-up backend To Cloud Run Instance
         run: |
           gcloud run deploy we-up --image $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$NEST_IMAGE_NAME:$IMAGE_TAG --project ${{ env.PROJECT_ID }} --platform managed --region $CLOUD_RUN_REGION --allow-unauthenticated
 
-      # - name: Deploy we-up Go Microservice To Cloud Run Instance
-      #   run: |
-      #     gcloud run deploy we-up --image $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:$IMAGE_TAG --project ${{ env.PROJECT_ID }} --platform managed --region $CLOUD_RUN_REGION --allow-unauthenticated
+      - name: Deploy we-up Go Microservice To Cloud Run Instance
+        run: |
+          gcloud run deploy we-up --image $ARTIFACT_REGISTRY/$PROJECT_ID/$ARTIFACT_REGISTRY_REPOSITORY/$GO_IMAGE_NAME:$IMAGE_TAG --project ${{ env.PROJECT_ID }} --platform managed --region $CLOUD_RUN_REGION --allow-unauthenticated
