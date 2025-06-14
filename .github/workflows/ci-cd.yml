@@ -15,7 +15,7 @@ env:
   CLOUD_RUN_REGION: ${{ secrets.CLOUD_RUN_REGION }}
   IMAGE_TAG: ${{ github.sha }}
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  # PORT: ${{ secrets.PORT }}
+  PORT: ${{ secrets.PORT }}
 
 jobs:
 
@@ -58,7 +58,7 @@ jobs:
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          # PORT: ${{ secrets.PORT }}
+          PORT: ${{ secrets.PORT }}
           file_name: .env
       - name: Load Go microservice envs and save to .env file
         uses: SpicyPizza/create-envfile@v1.3
