@@ -15,6 +15,7 @@ export default () => ({
     uri: process.env.MONGODB_URI,
   },
   jwtSecret: process.env.JWT_SECRET,
-  allowedOrigins: process.env.ALLOWED_ORIGINS
+  allowedOrigins: process.env.ALLOWED_ORIGINS,
+  FRONTEND_URL: process.env.FRONTEND_URL
   // Other configuration values
 });
