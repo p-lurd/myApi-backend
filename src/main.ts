@@ -19,6 +19,7 @@ async function bootstrap() {
   const allowedOrigins = configService
     .get<string>('allowedOrigins')
     ?.split(',') || ['http://localhost:5173'];
+    console.log({allowedOrigins})
 
   app.use(customCorsMiddleware(allowedOrigins));
   const port = process.env.PORT || configService.get<string>('port') || 3000;
