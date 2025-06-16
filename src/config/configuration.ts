@@ -16,6 +16,7 @@ export default () => ({
   },
   jwtSecret: process.env.JWT_SECRET,
   allowedOrigins: process.env.ALLOWED_ORIGINS,
-  FRONTEND_URL: process.env.FRONTEND_URL
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  DOMAIN: process.env.DOMAIN,
   // Other configuration values
 });

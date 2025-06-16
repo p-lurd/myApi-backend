@@ -16,11 +16,13 @@ import { tokenify } from './jwt.token';
 import * as bcrypt from 'bcryptjs';
 import { BusinessesService } from 'src/businesses/businesses.service';
 import { Model } from 'mongoose';
-import { BusinessUserDocument, BusinessUserModelName } from 'src/businesses/schemas/user-business.schema';
+import {
+  BusinessUserDocument,
+  BusinessUserModelName,
+} from 'src/businesses/schemas/user-business.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToInstance } from 'class-transformer';
 import { FilteredUserDto } from 'src/users/dto/filtered-user.dto';
-
 
 @Injectable()
 export class AuthService {
@@ -55,25 +57,41 @@ export class AuthService {
         createdAt: userDoc.createdAt,
       };
       // Ctreate a test business for the person signing up
-      
+
       // update the user business relationship to add userId
       // const userBusiness = await this.businessesService.updateUserBusiness(dbUser.email, {userId:dbUser._id})
       // // create the userBusiness relationship
       // const userBusiness = await this.businessesService.createUserBusiness(dbUser.name, dbUser._id.toString(), dbUser.email, ROLES.user, dbUser._id.toString());
 
       const token = await tokenify(this.jwtService, dbUser._id, dbUser.email);
-      res.cookie('authToken', token, {
+      const cookieOptions= {
         httpOnly: true,
         // Set "secure" to true in production with HTTPS
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite:
+          process.env.NODE_ENV === 'production'
+            ? ('none' as const)
+            : ('lax' as const),
         maxAge: 60 * 60 * 1000,
-      });
+        // ...(process.env.NODE_ENV === 'production' && {
+        //   domain: this.configService.get<string>('DOMAIN'),
+        // }),
+      }
+      res.cookie('authToken', token, cookieOptions);
       const FRONTEND_URL = this.configService.get<string>(
         'FRONTEND_URL',
         'http://localhost:3001',
       );
+      console.log('Redirecting to:', FRONTEND_URL);
+      // this delay is for testing purposes
+      if (process.env.NODE_ENV === 'production') {
+      setTimeout(() => {
+        res.redirect(FRONTEND_URL);
+      }, 100);
+    } else {
       res.redirect(FRONTEND_URL);
+    }
+      // res.redirect(FRONTEND_URL);
       // return res.json({user: dbUser}).redirect(FRONTEND_URL);
       // return user; // Return user object
     } catch (error) {
@@ -86,9 +104,13 @@ export class AuthService {
     try {
       // const {name, email, password} = registerUserDto;
       // const userData: any = { name, email, password};
-      const permittedAdmin = await this.businessUserModel.findOne({userEmail: registerUserDto.email})
-      if(!permittedAdmin){
-        throw new UnauthorizedException('User not authorized by organization yet');
+      const permittedAdmin = await this.businessUserModel.findOne({
+        userEmail: registerUserDto.email,
+      });
+      if (!permittedAdmin) {
+        throw new UnauthorizedException(
+          'User not authorized by organization yet',
+        );
       }
       const user = await this.usersService.create(registerUserDto);
       const token = await tokenify(
@@ -97,7 +119,10 @@ export class AuthService {
         user.email,
       );
       // update the user business relationship to add userId
-      const userBusiness = await this.businessesService.updateUserBusiness(user.email, {userId:user._id})
+      const userBusiness = await this.businessesService.updateUserBusiness(
+        user.email,
+        { userId: user._id },
+      );
       res.cookie('authToken', token, {
         httpOnly: true,
         // Set "secure" to true in production with HTTPS
@@ -107,17 +132,17 @@ export class AuthService {
       });
       return plainToInstance(FilteredUserDto, user.toObject?.() || user, {
         excludeExtraneousValues: true,
-        enableImplicitConversion: true
+        enableImplicitConversion: true,
       });
       // return res.status(201).json(user);
     } catch (error) {
       // console.error('Registration Error:', error); // Improved debugging
 
-    if (error instanceof UnauthorizedException) {
-      return res.status(401).json({ message: error.message });
-    }
+      if (error instanceof UnauthorizedException) {
+        return res.status(401).json({ message: error.message });
+      }
 
-    throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -127,14 +152,14 @@ export class AuthService {
       const user = await this.usersService.getUserDetails({ email: email });
       if (!user || !user.password) {
         throw new UnauthorizedException('message: wrong email or password');
-      }else{
+      } else {
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
-            res.status(400).json({
-                success: false,
-                message: 'Email or password not found and invalid',
-            });
-            return;
+          res.status(400).json({
+            success: false,
+            message: 'Email or password not found and invalid',
+          });
+          return;
         }
         const token = await tokenify(
           this.jwtService,
@@ -148,7 +173,10 @@ export class AuthService {
           sameSite: 'strict',
           maxAge: 60 * 60 * 1000,
         });
-        const filteredUser = plainToInstance(FilteredUserDto, user.toObject(), { excludeExtraneousValues: true, enableImplicitConversion: true  });
+        const filteredUser = plainToInstance(FilteredUserDto, user.toObject(), {
+          excludeExtraneousValues: true,
+          enableImplicitConversion: true,
+        });
         res.status(200).json(filteredUser);
       }
     } catch (error) {
@@ -160,10 +188,9 @@ export class AuthService {
     res.clearCookie('authToken', {
       httpOnly: true,
       // Set "secure" to true in production with HTTPS
-      secure: process.env.NODE_ENV === 'production', 
+      secure: process.env.NODE_ENV === 'production',
       // sameSite: 'strict', // or 'lax', depending on your frontend-backend setup
     });
     return res.status(200).json({ message: 'Logged out successfully' });
-  
   }
 }

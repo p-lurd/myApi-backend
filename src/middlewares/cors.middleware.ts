@@ -27,7 +27,7 @@ export function customCorsMiddleware(allowedOrigins: string[]) {
     res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
     res.header(
       'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization, Expires, expires, Cache-Control, cache-control, Pragma, pragma'
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, Expires, expires, Cache-Control, cache-control, Pragma, pragma, Cookie'
     );
     
     // Handle preflight
