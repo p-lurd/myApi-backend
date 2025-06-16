@@ -15,7 +15,11 @@ import (
 
 func main() {
 	fmt.Println("🚀 Golang worker started, fetching and processing API jobs...")
+	client := db.ConnectDB()
+	defer db.DisconnectDB()
 
+	cron.CronJob(client)
+	
 	http.HandleFunc("/", healthCheck)
 
 
@@ -27,10 +31,7 @@ func main() {
 	log.Printf("Server starting on port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 	// Connect and disconnect MongoDB connection
-	client := db.ConnectDB()
-	defer db.DisconnectDB()
-
-	cron.CronJob(client)
+	
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
