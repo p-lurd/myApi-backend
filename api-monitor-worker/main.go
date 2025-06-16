@@ -1,45 +1,77 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"net/http"
-	"log"
+	"time"
 
 	"weup.com/go-routine/cron"
 	"weup.com/go-routine/db"
-	// "api-monitor-worker/db"
 )
 
 func main() {
 	fmt.Println("🚀 Golang worker started, fetching and processing API jobs...")
+
+	// Connect to MongoDB first
 	client := db.ConnectDB()
 	defer db.DisconnectDB()
 
-	cron.CronJob(client)
-	
+	// Set up HTTP server first
 	http.HandleFunc("/", healthCheck)
-
+	http.HandleFunc("/health", healthCheck)
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	log.Printf("Server starting on port %s", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
-	// Connect and disconnect MongoDB connection
-	
+	// Create HTTP server
+	server := &http.Server{
+		Addr:         ":" + port,
+		Handler:      nil,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
 
+	// Start server in a goroutine (non-blocking)
+	go func() {
+		log.Printf("Server starting on port %s", port)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("Server error: %v", err)
+		}
+	}()
+
+	// Start the cron job (this will run in the main goroutine)
+	go cron.CronJob(client)
+
+	// Set up graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	// Wait for interrupt signal
 	<-stop
-	fmt.Println("\n🛑 Shutting down...")
+	fmt.Println("\n🛑 Shutting down gracefully...")
+
+	// Create a context with timeout for graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Shutdown the server
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("Server forced to shutdown: %v", err)
+	}
+
+	fmt.Println("✅ Server stopped")
 }
 
 func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Service is healthy")
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"status": "healthy", "timestamp": "%s"}`, time.Now().Format(time.RFC3339))
 }
