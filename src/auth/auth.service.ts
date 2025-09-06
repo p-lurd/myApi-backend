@@ -130,11 +130,11 @@ export class AuthService {
         sameSite: 'strict',
         maxAge: 60 * 60 * 1000,
       });
-      return plainToInstance(FilteredUserDto, user.toObject?.() || user, {
+      const filteredUser =  plainToInstance(FilteredUserDto, user.toObject?.() || user, {
         excludeExtraneousValues: true,
         enableImplicitConversion: true,
       });
-      // return res.status(201).json(user);
+      return res.status(201).json(filteredUser);
     } catch (error) {
       // console.error('Registration Error:', error); // Improved debugging
 

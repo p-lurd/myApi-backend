@@ -1,4 +1,4 @@
-import { HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { ApiDocument } from './schemas/api.schema';
@@ -49,6 +49,24 @@ async createApiResponse(createApiResponseDto: CreateApiResponseDto){
     }
 }
 
+async listBusinessApis(businessId: string) {
+  try {
+    if(!businessId) {
+            throw new BadRequestException("the param: businessId is absent");
+          }
+    const business = await this.businessesService.findOne(businessId);
+      if(!business) throw new NotFoundException('Business does not exist, check the url');
+      const data = await this.apiModel.find({businessId: business.id});
+      return data;
+  } catch (error) {
+    // console.error(error)
+    if(error instanceof HttpException){
+            // return res.status(500).json({message: error.message})
+            throw error
+        }
+        throw new InternalServerErrorException(error.message);
+  }
+}
 
 // the query help group the data
 async findApiResponses(id: string) {
@@ -133,13 +151,13 @@ async findApiResponses(id: string) {
       throw new InternalServerErrorException(error.message);
     }
   }
-  async fetchApiStatus({businessId, page = 1, limit = 30, apiIdFilter = null}) {
+  async fetchApiStatus({businessId, page = 1, limit = 10, apiIdFilter = null}) {
     try {
       const searchQuery: any = { businessId };
     if (apiIdFilter) {
       searchQuery.apiId = apiIdFilter;
     }
-      const res = await this.apiResponseModel.find(searchQuery).skip((page - 1) * limit).limit(limit).exec();
+      const res = await this.apiResponseModel.find(searchQuery).sort({createdAt: -1}).skip((page - 1) * limit).limit(limit).exec();
       if(!res){
         throw new Error("no data found")
       }

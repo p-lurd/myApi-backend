@@ -33,4 +33,12 @@ export class ApisController {
   findDashboard(@Param('businessId') businessId: string, @Query()query:FetchApiStatusDto) {
     return this.apiMonitorService.fetchApiStatus({businessId,...query}) 
   }
+
+  @Get('monitoring/apis/:businessId')
+  @UseGuards(AuthGuard)
+  @RequireBusinessRoles(ROLES.admin, ROLES.superAdmin)
+  @UseGuards(BusinessRolesGuard)
+  findAllApis(@Param('businessId') businessId: string){
+    return this.apiMonitorService.listBusinessApis(businessId)
+  }
 }
