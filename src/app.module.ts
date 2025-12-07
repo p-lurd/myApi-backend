@@ -6,13 +6,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BusinessesModule } from './businesses/businesses.module';
-import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
 import { ApiMonitorModule } from './api/api.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import configuration from './config/configuration';
 import { AuthMiddleware } from './auth/userMiddleware/authenticateUser.middleware.';
 import { ThrottlerModule, ThrottlerGuard  } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { MonitoringModule } from './monitoring/monitoring.module';
+import { RedisModule } from './redis/redis.module';
 
 
 
@@ -31,6 +32,8 @@ import { APP_GUARD } from '@nestjs/core';
         uri: configService.get<string>('database.uri'),
       }),
     }),
+    RedisModule,
+    MonitoringModule,
     BusinessesModule,
     ApiMonitorModule,
     ScheduleModule.forRoot(),
