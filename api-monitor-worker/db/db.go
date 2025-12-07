@@ -19,8 +19,6 @@ var Client *mongo.Client
 
 func ConnectDB() *mongo.Client {
 	
-	// Try to load development environment by default for local runs
-    // This will be silently ignored in Docker since Docker uses env_file
 	err := godotenv.Load(".env.development")
     if err != nil {
         log.Printf("Note: Could not load .env.development file (this is normal in Docker)")
@@ -57,9 +55,9 @@ func DisconnectDB() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		if err := Client.Disconnect(ctx); err != nil {
-			log.Fatal("❌ Error Disconnecting MongoDB:", err)
+			log.Fatal("Error Disconnecting MongoDB:", err)
 		} else {
-			fmt.Println("✅ MongoDB Disconnected Successfully!")
+			fmt.Println("MongoDB Disconnected Successfully!")
 		}
 	}
 }

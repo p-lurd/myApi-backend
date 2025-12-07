@@ -19,8 +19,6 @@ import (
 
 // FetchJobs retrieves API jobs from MongoDB
 func FetchJobs(client *mongo.Client) []models.ApiJob {
-	// Try to load development environment by default for local runs
-    // This will be silently ignored in Docker since Docker uses env_file
 	err := godotenv.Load(".env.development")
     if err != nil {
         log.Printf("Note: Could not load .env.development file (this is normal in Docker)")
@@ -31,7 +29,7 @@ func FetchJobs(client *mongo.Client) []models.ApiJob {
 
 	cursor, err := apiCollection.Find(context.Background(), bson.M{})
 	if err != nil {
-		log.Fatalf("❌ Error fetching API Jobs: %v", err)
+		log.Fatalf("Error fetching API Jobs: %v", err)
 	}
 	defer cursor.Close(context.Background())
 
@@ -40,7 +38,7 @@ func FetchJobs(client *mongo.Client) []models.ApiJob {
 
 		var job models.ApiJob
 		if err := cursor.Decode(&job); err != nil {
-			log.Println("❌ Error decoding API Job:", err)
+			log.Println("Error decoding API Job:", err)
 			continue
 		}
 
@@ -51,6 +49,6 @@ func FetchJobs(client *mongo.Client) []models.ApiJob {
 	}
 
 	fmt.Println("jobs:", jobs)
-	fmt.Printf("✅ Found %d API jobs\n", len(jobs))
+	fmt.Printf("Found %d API jobs\n", len(jobs))
 	return jobs
 }
